@@ -21,6 +21,30 @@ def create_appointment(year:int,month:int,day:int,hour:int,minutes:int, data:App
     })
     return {"msg": "Agendamento confirmado"}
 
-@router.get("/agenda/{year}{month}")
-def get_month_overview(year:int,month:int):
-    return {"msg":"em breve"}
+@router.get("/agenda/{year}/{month}")
+def get_month_agenda(year: int, month: int):
+    from calendar import monthrange
+
+    first_day = datetime(year, month, 1)
+    last_day = datetime(year, month, monthrange(year, month)[1], 23, 59)
+
+    appointments = appointments_collection.find({
+        "datetime": {"$gte": first_day, "$lte": last_day}
+    }).sort("datetime", 1)
+
+    agenda = {}
+
+    for appt in appointments:
+        dt = appt["datetime"]
+        day_str = dt.strftime("%Y-%m-%d")
+        entry = {
+            "horario": dt.strftime("%H:%M"),
+            "service": appt["service"],
+            "client_name": appt["client_name"]
+        }
+
+        if day_str not in agenda:
+            agenda[day_str] = []
+        agenda[day_str].append(entry)
+
+    return agenda
