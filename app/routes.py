@@ -9,9 +9,9 @@ router = APIRouter()
 def get_avaliable_dates():
     return {"msg": "em breve"}
 
-@router.post("/marcar/{year}{month}{day}{hour}{minute}")
-def create_appointment(year:int,month:int,day:int,hour:int,minutes:int, data:AppointmentRequest = None):
-    date = datetime(year, month, day, hour, minute)
+@router.post("/marcar/{year}/{month}/{day}/{hour}/{minutes}")
+def create_appointment(year:int,month:int,day:int,hour:int,minutes:int, data:AppointmentRequest):
+    date = datetime(year, month, day, hour, minutes)
     if appointments_collection.find_one({"datetime": date}):
         raise HTTPException(status_code=400, detail="Horário já marcado.")
     appointments_collection.insert_one({
