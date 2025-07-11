@@ -12,8 +12,18 @@ def get_avaliable_dates():
 @router.post("/marcar/{year}/{month}/{day}/{hour}/{minutes}")
 def create_appointment(year:int,month:int,day:int,hour:int,minutes:int, data:AppointmentRequest):
     date = datetime(year, month, day, hour, minutes)
+    weekday = date.weekday()
+
+    
+    if weekday == 6 or weekday == 5:
+        raise HTTPException(status_code=400, detail="A loja está fechada nesse dia.")
+
+    if hour < 10 or hour >= 17:
+        raise HTTPException(status_code=400, detail="Horário fora do expediente (10h às 17h).")
+
     if appointments_collection.find_one({"datetime": date}):
         raise HTTPException(status_code=400, detail="Horário já marcado.")
+    
     appointments_collection.insert_one({
         "datetime":date,
         "service": data.service,
